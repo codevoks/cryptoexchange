@@ -1,14 +1,11 @@
 {
-  "extends": "@repo/typescript-config/base.json",
+  "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
     "lib": ["ES2015"],
     "outDir": "./dist",
     "paths": {
       "@repo/types": ["../../packages/types/src/*"],
-      "@repo/auth-utils/*": ["../../packages/auth-utils/src/*"],
-      "@repo/db/*": ["../../packages/db/*"],
-      "@repo/redis-utils/*": ["../../packages/redis-utils/src/*"],
-      "@repo/orderbook-cors/*": ["../../packages/orderbook-cors/src/*"]
+      "@repo/redis-utils/*": ["../../packages/redis-utils/src/*"]
     }
   },
   "include": ["src"],

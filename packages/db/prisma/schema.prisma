@@ -16,6 +16,7 @@ model User {
   orders          Order[]
   tradesAsBuyer   Trade[] @relation("BuyerTrades")
   tradesAsSeller  Trade[] @relation("SellerTrades")
+  balances        Balance[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -64,6 +65,28 @@ model Trade {
   @@index([sellerOrderId])
   @@index([buyerId])
   @@index([sellerId])
+}
+
+// Per-user, per-asset ledger. `available` can be spent/withdrawn; `reserved` is
+// locked against open orders. available + reserved is the user's total holding
+// of that asset. Every mutation to this table happens inside a Prisma
+// transaction alongside the Order/Trade row it corresponds to (see
+// packages/db/src/lib/order.ts and settlement.ts) so a balance can never be
+// debited without a matching order/trade record, or vice versa.
+model Balance {
+  id        String   @id @default(uuid())
+  userId    String
+  asset     String
+  available Decimal  @db.Decimal(65, 30) @default(0)
+  reserved  Decimal  @db.Decimal(65, 30) @default(0)
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, asset])
+  @@index([userId])
 }
 
 enum OrderType {

@@ -4,9 +4,79 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: mydatabase
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: mypassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:mypassword@localhost:5432/mydatabase
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-only-secret-not-for-deployment
+      SALT_ROUNDS: "10"
+      NEXT_PUBLIC_WS_URL: ws://localhost:8080
+      REDIS_CHANNEL_ORDERBOOK_PREFIX: orderbook
+      REDIS_CHANNEL_TRADE_PREFIX: tradebook
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npm run check-types
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy --schema=packages/db/prisma/schema.prisma
+
+      - name: Test
+        run: npx turbo run test
+
+      - name: Build
+        # Bypasses the root `build` script's `dotenv -e .env --` wrapper —
+        # there's no .env file in CI, everything needed is already in `env:` above.
+        run: npx turbo run build
+
   build-and-push:
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
@@ -113,7 +183,12 @@ jobs:
             echo "WS_PORT=8080" >> .env
             echo "NEXT_PUBLIC_WS_URL=ws://${{ vars.EC2_HOST }}:8080" >> .env
 
-            # 4. Pull & run containers
+            # 4. Pull & recreate containers WITHOUT touching named volumes
+            # (`down -v` here would wipe the production Postgres data
+            # directory on every deploy — `down` alone stops/removes
+            # containers but preserves volumes). The web container's own
+            # startup command runs `prisma migrate deploy` before serving
+            # traffic, so pending migrations still get applied.
             docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml down -v
+            docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml up -d

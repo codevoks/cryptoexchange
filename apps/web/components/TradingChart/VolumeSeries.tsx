@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { ISeriesApi, HistogramSeries } from 'lightweight-charts';
-import { VolumeSeriesProps, VolumeData } from '../../types/charts';
+import { VolumeSeriesProps } from '../../types/charts';
 
 export default function VolumeSeriesComponent({ chart, volumes, onSeriesReady }: VolumeSeriesProps) {
   const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);

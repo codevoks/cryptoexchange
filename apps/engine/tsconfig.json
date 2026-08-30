@@ -5,10 +5,7 @@
     "outDir": "./dist",
     "paths": {
       "@repo/types": ["../../packages/types/src/*"],
-      "@repo/auth-utils/*": ["../../packages/auth-utils/src/*"],
-      "@repo/db/*": ["../../packages/db/*"],
-      "@repo/redis-utils/*": ["../../packages/redis-utils/src/*"],
-      "@repo/orderbook-cors/*": ["../../packages/orderbook-cors/src/*"]
+      "@repo/redis-utils/*": ["../../packages/redis-utils/src/*"]
     }
   },
   "include": ["src"],

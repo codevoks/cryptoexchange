@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { ISeriesApi, CandlestickSeries } from 'lightweight-charts';
-import { CandlestickSeriesProps, Candle } from '../../types/charts';
+import { CandlestickSeriesProps } from '../../types/charts';
 
 export default function CandlestickSeriesComponent({ chart, candles, onSeriesReady }: CandlestickSeriesProps) {
   const candlestickSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);

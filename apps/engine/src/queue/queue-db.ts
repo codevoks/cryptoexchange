@@ -1,5 +1,5 @@
 import { startQueue } from "./queue-service";
-import { handleTradeInsert } from "../trade-service.ts/trade.service";
+import { handleTradeInsert } from "../trade-service/trade.service";
 
 export async function initTradesQueue(queueName: string) {
     try {

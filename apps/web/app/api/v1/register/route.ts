@@ -1,20 +1,12 @@
-// 🔹 Load dotenv BEFORE any imports that depend on env vars
-// import dotenv from "dotenv";
-// import path from "path";
-
-// Resolve root-level .env manually (from monorepo root)
-// const rootEnvPath = path.resolve(process.cwd(), "../../.env");
-// dotenv.config({ path: rootEnvPath });
-
 import { NextRequest, NextResponse } from "next/server";
-import { RegisterSchema } from "@repo/types/authTypes";
+import { RegisterSchema, JwtPayLoad } from "@repo/types/authTypes";
+import { jwtSign } from "@repo/auth-utils/jwt";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
-import { createUser, getUserByEmail } from "@repo/db/index";
+import { createUser, getUserByEmail, seedDemoBalances } from "@repo/db/index";
+import { setAuthCookie } from "@/lib/auth/session";
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const SALT_ROUNDS = Number(process.env.SALT_ROUNDS);
+const SALT_ROUNDS = Number(process.env.SALT_ROUNDS) || 10;
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,13 +14,13 @@ export async function POST(request: NextRequest) {
     const result = RegisterSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
-        { error: "Internal Server Error" },
-        { status: 403 }
+        { error: "Invalid name, email, or password" },
+        { status: 400 }
       );
     }
     const { name, email, password } = result.data;
-    const exisitingUser = await getUserByEmail(email);
-    if (exisitingUser) {
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
       return NextResponse.json(
         { message: "User already exists" },
         { status: 409 }
@@ -36,24 +28,27 @@ export async function POST(request: NextRequest) {
     }
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await createUser(name, email, hashedPassword);
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      JWT_SECRET as string,
-      { expiresIn: "1h" }
-    );
-    const cookieStore = await cookies();
-    cookieStore.set({
-      name: "token",
-      value: token,
-      httpOnly: true,
-      path: "/",
-      maxAge: 60 * 60,
-    });
-    return NextResponse.json(
+    // Demo-only: grant starting funds so the exchange is usable immediately
+    // after registering, since there's no deposit flow.
+    await seedDemoBalances(user.id);
+
+    const payload: JwtPayLoad = { userId: user.id, email: user.email };
+    const token = await jwtSign(payload, JWT_SECRET as string);
+    if (!token) {
+      return NextResponse.json(
+        { message: "Token could not be created" },
+        { status: 500 }
+      );
+    }
+
+    const response = NextResponse.json(
       { message: "Registration successful" },
       { status: 200 }
     );
+    setAuthCookie(response, token);
+    return response;
   } catch (error) {
+    console.error("Registration error:", error);
     return NextResponse.json(
       { message: "Error in registering user" },
       { status: 500 }

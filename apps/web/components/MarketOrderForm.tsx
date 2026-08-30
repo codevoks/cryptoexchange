@@ -12,6 +12,8 @@ export default function MarketOrderForm({
   symbol,
 }: MarketOrderFormProps) {
   const [quantity, setQuantity] = useState<number | "">("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const isBuy = side === "BUY";
 
   const baseColor = isBuy ? "#1a3e2a" : "#3a1a1a";
@@ -22,28 +24,34 @@ export default function MarketOrderForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quantity) return alert("Please enter quantity");
-
-    const orderData = {
-      userId: "user-123",
-      type: "MARKET",
-      side,
-      symbol: symbol,
-      quantity: Number(quantity),
-      pricePerUnit: null,
-    };
-
-    console.log("Submitting Market Order:", orderData);
+    setMessage("");
+    setLoading(true);
 
     try {
-      const res = await fetch("/api/v1/orders", {
+      const res = await fetch("/api/v1/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
+        body: JSON.stringify({
+          type: "MARKET",
+          side,
+          symbol,
+          quantity: Number(quantity),
+        }),
       });
 
-      if (!res.ok) throw new Error("Failed to place order");
-    } catch (err) {
-      console.error("❌ Error placing market order:", err);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(typeof data.error === "string" ? data.error : "Failed to place order");
+      }
+
+      setMessage(`${side} MARKET order placed successfully!`);
+      window.dispatchEvent(new Event("balances:refresh"));
+      setQuantity("");
+    } catch (err: any) {
+      console.error("Error placing market order:", err);
+      setMessage(err.message ?? "Failed to place order");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,7 +80,10 @@ export default function MarketOrderForm({
 
       <button
         type="submit"
-        className="w-full py-2 mt-2 font-semibold transition-all duration-200 rounded-md"
+        disabled={loading}
+        className={`mt-2 w-full py-2 rounded-md font-semibold transition-all duration-200 ${
+          loading ? "opacity-70 cursor-not-allowed" : ""
+        }`}
         style={{
           backgroundColor: baseColor,
           color: textColor,
@@ -82,8 +93,18 @@ export default function MarketOrderForm({
           (e.currentTarget.style.backgroundColor = baseColor)
         }
       >
-        {side} MARKET
+        {loading ? "Placing..." : `${side} MARKET`}
       </button>
+
+      {message && (
+        <p
+          className={`text-sm text-center mt-1 ${
+            message.includes("successfully") ? "text-green-400" : "text-red-400"
+          }`}
+        >
+          {message}
+        </p>
+      )}
     </form>
   );
 }

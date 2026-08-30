@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { ISeriesApi, IPriceLine } from 'lightweight-charts';
-import { PriceLineProps, Candle } from '../../types/charts';
+import { IPriceLine } from 'lightweight-charts';
+import { PriceLineProps } from '../../types/charts';
 
 export default function PriceLine({ candlestickSeries, candles }: PriceLineProps) {
   const priceLineRef = useRef<IPriceLine | null>(null);

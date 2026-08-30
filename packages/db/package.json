@@ -4,7 +4,8 @@
   "main": "./src/index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "check-types": "tsc --noEmit",
     "postinstall": "prisma generate"
   },
   "keywords": [],
@@ -12,12 +13,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^6.12.0"
+    "@prisma/client": "^6.19.3",
+    "@repo/types": "*"
   },
   "exports": {
     "./*": "./src/*.ts"
   },
   "devDependencies": {
-    "prisma": "^6.12.0"
+    "prisma": "^6.19.3"
   }
 }

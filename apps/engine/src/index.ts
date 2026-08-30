@@ -1,32 +1,17 @@
-// import * as dotenv from "dotenv";
-import { resolve } from "path";
-// dotenv.config({ path: resolve(__dirname, "../../../.env") });
-
 import { QUEUE_NAMES } from "@repo/redis-utils/constants";
 import { initOrdersQueue } from "./queue/queue-matcher";
 import { initTradesQueue } from "./queue/queue-db";
+import { initCancelsQueue } from "./queue/queue-cancel";
 import { startMetricsServer } from "./metrics/metrics";
 
 async function init() {
-  console.clear();
-  console.log("🚀 Starting Matching Engine...");
+  console.log("Starting Matching Engine...");
   await Promise.all([
     initOrdersQueue(QUEUE_NAMES.ORDERS),
     initTradesQueue(QUEUE_NAMES.TRADES),
+    initCancelsQueue(QUEUE_NAMES.CANCELS),
   ]);
   startMetricsServer(9101);
 }
 
 init();
-
-//keep on checking if there is any order in queue 1
-
-//fetch the order
-
-//matching logic
-
-/*if matched
-    update order book
-    put the transaction in queue2
-    broadcast the match using pub
-*/

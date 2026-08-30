@@ -1,10 +1,23 @@
-import fetch from "node-fetch";
+// Populates the order book with resting orders for local demoing/testing.
+// Buy prices stay below sell prices on purpose so nothing crosses/matches —
+// this is meant to build up book depth, not generate trades.
+//
+// Usage:
+//   AUTH_COOKIE="token=<jwt from your browser's cookies after logging in>" node scripts/floodOrders.js
+//
+// Requires Node 18+ (uses the built-in fetch).
 
-const API_URL = "http://localhost:3000/api/v1/orders"; // adjust port if needed
-const AUTH_COOKIE =
-  "token=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJjNmFjMmUxZS03YTI4LTQ2MDYtYWM4Zi0yODA2YjUyZmMxMzQiLCJlbWFpbCI6ImFiYzJAYWJjIiwiaWF0IjoxNzYyNjA5NTExLCJleHAiOjE3NjI2MTMxMTF9.LK-U4HjD9ih5oYJoMTplPZxRJuGC3gIQFWan72YoqYI"; // 👈 paste the cookie value from browser
+const API_URL = process.env.API_URL ?? "http://localhost:3000/api/v1/order";
+const AUTH_COOKIE = process.env.AUTH_COOKIE;
 
-// This ensures no trades happen — buy < sell prices
+if (!AUTH_COOKIE) {
+  console.error(
+    "Missing AUTH_COOKIE env var. Log in via the web app, copy the `token` cookie value, and run:\n" +
+      '  AUTH_COOKIE="token=<value>" node scripts/floodOrders.js'
+  );
+  process.exit(1);
+}
+
 const buyPrices = [
   65000, 64950, 64900, 64850, 64800, 64750, 64700, 64650, 64600, 64550,
 ];
@@ -13,18 +26,14 @@ const sellPrices = [
 ];
 
 const ORDERS = [
-  ...buyPrices.map((price, i) => ({
-    id: `buy-${i + 1}`,
-    userId: "user-101",
+  ...buyPrices.map((price) => ({
     type: "LIMIT",
     side: "BUY",
     symbol: "BTCUSDT",
     pricePerUnit: price,
     quantity: 0.5,
   })),
-  ...sellPrices.map((price, i) => ({
-    id: `sell-${i + 1}`,
-    userId: "user-102",
+  ...sellPrices.map((price) => ({
     type: "LIMIT",
     side: "SELL",
     symbol: "BTCUSDT",
@@ -40,24 +49,20 @@ async function floodOrders() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Cookie: AUTH_COOKIE, // 👈 attach your JWT cookie
+          Cookie: AUTH_COOKIE,
         },
         body: JSON.stringify(order),
       });
 
       if (!res.ok) {
-        const err = await res.text();
-        // console.error(`❌ Failed for ${order.id}:`, err);
-        console.error(`❌ Failed for `);
+        console.error(`Failed for ${order.side} @ ${order.pricePerUnit}:`, await res.text());
       } else {
-        // console.log(`✅ Added ${order.side} order: ${order.pricePerUnit}`);
-        // console.log(`✅ Added `);
+        console.log(`Added ${order.side} order @ ${order.pricePerUnit}`);
       }
 
       await new Promise((r) => setTimeout(r, 150)); // small delay to avoid overload
     } catch (err) {
-      // console.error(`💥 Error for ${order.id}:`, err.message);
-      console.error(`💥 Error for : `);
+      console.error(`Error for ${order.side} @ ${order.pricePerUnit}:`, err.message);
     }
   }
 }

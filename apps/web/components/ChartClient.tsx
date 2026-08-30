@@ -8,6 +8,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import OrderBook from "./OrderBook";
 import TradeTrigger from "./TradeTrigger";
+import BalanceDisplay from "./BalanceDisplay";
+import OpenOrders from "./OpenOrders";
 
 // Types
 type VolumeData = {
@@ -272,6 +274,10 @@ export default function ChartClient() {
               </div>
               <OrderBook symbol={symbol} />
               <TradeTrigger symbol={symbol} />
+            </div>
+            <div className="grid grid-cols-1 gap-4 mt-4 md:grid-cols-2">
+              <BalanceDisplay />
+              <OpenOrders />
             </div>
           </div>
         </>

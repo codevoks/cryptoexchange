@@ -1,5 +1,4 @@
 "use client";
-import { nanoid } from "nanoid";
 import { useState } from "react";
 
 interface LimitOrderFormProps {
@@ -29,27 +28,27 @@ export default function LimitOrderForm({ side, symbol }: LimitOrderFormProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: nanoid(),
-          userId: "test-user-1", // replace with actual logged in user ID
           symbol,
           type: "LIMIT",
           side,
           pricePerUnit: Number(price),
           quantity: Number(quantity),
-          slippagePercent: 0,
         }),
       });
 
-      if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(typeof data.error === "string" ? data.error : "Failed to place order");
+      }
 
       setMessage(`${side} LIMIT order placed successfully!`);
+      window.dispatchEvent(new Event("balances:refresh"));
 
       setPrice("");
       setQuantity("");
     } catch (err: any) {
-      console.error("❌ Error placing order:", err);
-      setMessage("Failed to place order");
+      console.error("Error placing order:", err);
+      setMessage(err.message ?? "Failed to place order");
     } finally {
       setLoading(false);
     }

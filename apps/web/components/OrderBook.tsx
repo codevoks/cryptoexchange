@@ -143,7 +143,6 @@ export default function OrderBook({ symbol }: { symbol: string }) {
 
     return orders.map((order, idx) => {
       const barWidth = (order.cumulativeQuantity / maxCumulative) * 100;
-      const baseColor = side === "BUY" ? "#178a45" : "#9c2525";
       const overlayColor = side === "BUY" ? "#0f5d30" : "#681a1a";
 
       return (

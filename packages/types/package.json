@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "./index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "check-types": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -13,5 +14,15 @@
   "type": "module",
   "exports": {
     "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "zod": "^3.25.67",
+    "jose": "^6.1.0"
+  },
+  "devDependencies": {
+    "react-icons": "^5.5.0",
+    "@repo/typescript-config": "*",
+    "typescript": "5.8.2"
   }
 }

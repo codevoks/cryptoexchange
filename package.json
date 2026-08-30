@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "cryptoexchange",
   "private": true,
   "scripts": {
     "build": "dotenv -e .env -- turbo run build",
@@ -7,10 +7,11 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
+    "test": "turbo run test",
     "clean": "rm -rf node_modules .turbo apps/web/.next",
     "db:migrate": "dotenv -e .env -- npx prisma migrate dev --schema=packages/db/prisma/schema.prisma",
     "db:studio": "dotenv -e .env -- npx prisma studio --schema=packages/db/prisma/schema.prisma",
-    "flood:orders": "node scripts/floodOrderBook.js",
+    "flood:orders": "node scripts/floodOrders.js",
     "docker:prune:engine": "turbo prune --scope=engine --docker",
     "docker:prune:web": "turbo prune --scope=web --docker",
     "docker:prune:ws": "turbo prune --scope=ws-server --docker"
@@ -21,25 +22,16 @@
     "prettier": "^3.5.3",
     "tailwindcss": "^4.1.10",
     "turbo": "^2.5.4",
-    "typescript": "5.8.2"
+    "typescript": "5.8.2",
+    "vitest": "^3.2.4"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "packageManager": "npm@10.9.0",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "dependencies": {
-    "@prisma/client": "^6.11.0",
-    "@types/express": "^5.0.5",
-    "@types/redis": "^4.0.10",
-    "express": "^5.1.0",
-    "jose": "^6.1.0",
-    "lightweight-charts": "^5.0.8",
-    "node-fetch": "^3.3.2",
-    "redis": "^5.5.6"
-  },
   "type": "module"
 }

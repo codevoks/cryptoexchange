@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { ISeriesApi, CandlestickData, Time } from 'lightweight-charts';
+import { CandlestickData, Time } from 'lightweight-charts';
 import { TooltipProps } from '../../types/charts';
 
 export default function Tooltip({ chart, candlestickSeries, volumeSeries }: TooltipProps) {

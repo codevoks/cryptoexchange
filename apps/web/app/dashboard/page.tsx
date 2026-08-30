@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import ChartClient from "@/components/ChartClient";
-import OrderBook from "@/components/OrderBook";
 
 export default function Page() {
   return (

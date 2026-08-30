@@ -3,8 +3,6 @@ import { FooterContent } from "@repo/types/footerTypes";
 import { FooterColumn } from "@repo/types/footerTypes";
 import { footerColumnTitleStyle,footerColumnBodyStyle } from "../styles/footerColumn/footerColumnStyle"
 
-const currentYear = new Date().getFullYear();
-
 export default function FooterColumnComponent ({title, content}: FooterColumn) {
     return (
         <div className="">

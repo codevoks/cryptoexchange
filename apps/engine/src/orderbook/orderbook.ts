@@ -48,7 +48,6 @@ export class OrderBook {
     //here this map's value is getting passed by reference so the map will get updated and not the level variable
     let level = levels.get(price);
     level?.push(order);
-    this.printOrderBook();
   }
 
   removeOrder(order: CreateOrderInput): void {
@@ -57,7 +56,6 @@ export class OrderBook {
       return;
     }
     let { levels, prices } = this.getSideData(order);
-    this.printOrderBook();
     if (!levels.has(price)) {
       return;
     }
@@ -72,7 +70,22 @@ export class OrderBook {
     } else {
       levels.set(price, newLevel);
     }
-    this.printOrderBook();
+  }
+
+  /**
+   * Removes a specific resting order by id, used by order cancellation.
+   * Returns false if the order is no longer in the book (e.g. it was already
+   * fully matched before the cancel request arrived) so the caller can tell
+   * "cancelled" apart from "nothing to cancel".
+   */
+  removeOrderById(side: OrderSide, price: number, orderId: string): boolean {
+    const levels = side === OrderSide.BUY ? this.bidLevels : this.askLevels;
+    const target = levels.get(price)?.find((o) => o.id === orderId);
+    if (!target) {
+      return false;
+    }
+    this.removeOrder(target);
+    return true;
   }
 
   getBestPrice(side: OrderSide): number | undefined {
@@ -104,22 +117,6 @@ export class OrderBook {
     }
   }
 
-  getSlippagePrice(
-    side: OrderSide,
-    bestPrice: number,
-    slippagePercent: number
-  ): number {
-    return side === OrderSide.BUY
-      ? bestPrice * (1 + slippagePercent)
-      : bestPrice * (1 - slippagePercent);
-  }
-  /*
-    A smart way to use ternary operator could be
-
-    getOrdersAtPrice(price: number, side: OrderSide): Order[] {
-        return (side === OrderSide.BUY ? this.bidLevels.get(price) : this.askLevels.get(price)) ?? [];
-    }
-    */
   printOrderBook(): void {
     console.log("======== ORDER BOOK ========");
 

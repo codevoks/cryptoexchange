@@ -1,4 +1,3 @@
-import Link from "next/link";
 import SocialIconGrid from "./SocialIconGrid";
 import FooterColumnComponent from "./FooterColumnComponent";
 import { FooterColumnData, SocialMediaData } from "../lib/footerdata"; 

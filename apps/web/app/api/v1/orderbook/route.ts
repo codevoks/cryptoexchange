@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       orderbook,
       trades,
     });
-  } catch (error) {
+  } catch {
     console.log("Error while getting data for snapshot");
   }
 }

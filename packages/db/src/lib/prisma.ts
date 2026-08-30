@@ -1,8 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import path from "path";
-import dotenv from "dotenv";
 
-// dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
 declare global {
   var prisma: PrismaClient | undefined;
 }
@@ -10,7 +7,7 @@ declare global {
 export const prisma =
   global.prisma ||
   new PrismaClient({
-    log: ["query"],
+    log: process.env.NODE_ENV === "production" ? ["error", "warn"] : ["query", "error", "warn"],
   });
 
 if (process.env.NODE_ENV !== "production") {

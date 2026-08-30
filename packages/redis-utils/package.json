@@ -3,19 +3,21 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "description": "",
+  "types": "./src/index.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./*": "./dist/*.js"
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
   },
   "dependencies": {
     "@repo/metrics-utils": "*",
-    "redis": "^4.7.0"
+    "@repo/types": "*",
+    "redis": "^5.5.6"
   }
 }

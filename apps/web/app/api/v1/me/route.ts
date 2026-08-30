@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
     return NextResponse.json({ name: user.name }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 }

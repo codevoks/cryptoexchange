@@ -5,8 +5,9 @@ node_modules
 .pnp
 .pnp.js
 
-# Local env files
+# Local env files (the .env.example.* files ARE meant to be committed as templates)
 .env
+.env.docker
 .env.local
 .env.development.local
 .env.test.local
@@ -26,6 +27,7 @@ coverage
 out/
 build
 dist
+*.tsbuildinfo
 
 
 # Debug
