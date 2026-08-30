@@ -16,9 +16,9 @@ arriving over WebSocket without a page refresh — not just clicking around a UI
    ```
 3. Open two browser windows side by side (or one normal + one incognito, so they don't share the
    session cookie) at `http://localhost:3000`.
-4. In **Window A**, register a new account (e.g. `alice@example.com`) — this seeds demo balances
-   (USDT, USDC, BTC, ETH).
-5. In **Window B**, register a second account (e.g. `bob@example.com`).
+4. In **Window A**, register a new account (e.g. `alice@example.com` / `password123`) — this seeds
+   demo balances (USDT, USDC, BTC, ETH).
+5. In **Window B**, register a second account (e.g. `bob@example.com` / `password123`).
 6. In both windows, go to **Markets → BTC/USDT** so both land on
    `http://localhost:3000/dashboard?symbol=BTCUSDT`.
 7. Have a terminal ready, tailing the engine's logs:
