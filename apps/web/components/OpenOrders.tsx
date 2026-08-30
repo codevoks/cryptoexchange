@@ -40,9 +40,20 @@ export default function OpenOrders() {
   const cancelOrder = async (id: string) => {
     setCancellingId(id);
     try {
-      await fetch(`/api/v1/order/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/v1/order/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        // Cancellation was rejected (e.g. already filled) — let the user retry.
+        setCancellingId(null);
+        return;
+      }
       window.dispatchEvent(new Event("balances:refresh"));
-    } finally {
+      // Cancellation is asynchronous — the engine, not this request, actually
+      // removes the order. Leave the button showing "Cancelling…" until the
+      // next poll drops this order out of `pending` below (its own row then
+      // disappears along with it), rather than reverting the button the
+      // moment this network request finishes.
+    } catch (err) {
+      console.error("Failed to cancel order:", err);
       setCancellingId(null);
     }
   };
@@ -55,27 +66,42 @@ export default function OpenOrders() {
       {pending.length === 0 ? (
         <p className="text-sm text-gray-500">No open orders</p>
       ) : (
-        <div className="space-y-1">
-          {pending.map((o) => (
-            <div
-              key={o.id}
-              className="flex items-center justify-between text-sm font-mono"
-            >
-              <span className={o.side === "BUY" ? "text-[#4fff8a]" : "text-[#ff6b6b]"}>
-                {o.side} {o.type}
-              </span>
-              <span className="text-gray-300">
-                {Number(o.quantity).toFixed(4)} @ {Number(o.price).toFixed(2)}
-              </span>
-              <button
-                onClick={() => cancelOrder(o.id)}
-                disabled={cancellingId === o.id}
-                className="ml-2 text-xs text-gray-400 hover:text-red-400"
+        <div className="space-y-[6px]">
+          {pending.map((o) => {
+            const remaining = Number(o.quantity) - Number(o.filled);
+            const filled = Number(o.filled);
+            const isBuy = o.side === "BUY";
+            const sideColor = isBuy ? "#4fff8a" : "#ff6b6b";
+            const rowBg = isBuy ? "#1a3e2a40" : "#3a1a1a40";
+            const isCancelling = cancellingId === o.id;
+
+            return (
+              <div
+                key={o.id}
+                className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm font-mono"
+                style={{ backgroundColor: rowBg }}
               >
-                {cancellingId === o.id ? "..." : "Cancel"}
-              </button>
-            </div>
-          ))}
+                <span className="font-semibold" style={{ color: sideColor }}>
+                  {o.side} {o.type}
+                </span>
+                <span className="flex-1 text-right text-gray-300">
+                  {remaining.toFixed(4)} @ {Number(o.price).toFixed(2)}
+                  {filled > 0 && (
+                    <span className="text-gray-500"> ({filled.toFixed(4)} filled)</span>
+                  )}
+                </span>
+                <button
+                  onClick={() => cancelOrder(o.id)}
+                  disabled={isCancelling}
+                  className={`shrink-0 rounded-md border border-[#ff6464]/50 bg-[#3a1a1a] px-2.5 py-1 text-xs font-semibold text-[#ff6464] transition-colors duration-150 hover:bg-[#5b2121] ${
+                    isCancelling ? "opacity-60 cursor-not-allowed" : ""
+                  }`}
+                >
+                  {isCancelling ? "Cancelling…" : "Cancel"}
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

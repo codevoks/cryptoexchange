@@ -122,15 +122,7 @@ export default function LimitOrderForm({ side, symbol }: LimitOrderFormProps) {
       </button>
 
       {/* MESSAGE */}
-      {message && (
-        <p
-          className={`text-sm text-center mt-1 ${
-            message.includes("successfully") ? "text-green-400" : "text-red-400"
-          }`}
-        >
-          {message}
-        </p>
-      )}
+      {message && <p className="text-sm text-center mt-1 text-white">{message}</p>}
     </form>
   );
 }

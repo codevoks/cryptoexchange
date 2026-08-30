@@ -92,6 +92,24 @@ describe("OrderBook", () => {
     expect(book.getBidPrices()).toEqual([]);
   });
 
+  it("reduceOrderQuantity removes the order even when float rounding leaves a tiny non-zero residual", () => {
+    // Reproduces a real sequence: 0.1 reduced by 0.04 leaves 0.06000000000000005
+    // (a float artifact, not exactly 0.06). Reducing that by a second fill of
+    // exactly 0.06 leaves a residual of ~5e-18 — not === 0, but well under a
+    // satoshi. The order must still be treated as fully consumed.
+    const book = new OrderBook();
+    const order = makeOrder({ side: OrderSide.SELL, pricePerUnit: 65000, quantity: 0.1 });
+    book.addOrder(order);
+
+    book.reduceOrderQuantity(order, 0.04);
+    expect(order.quantity).not.toBe(0.06); // confirms the float artifact is present
+    expect(book.getOrdersAtPrice(65000, OrderSide.SELL)).toHaveLength(1);
+
+    book.reduceOrderQuantity(order, 0.06);
+    expect(book.getOrdersAtPrice(65000, OrderSide.SELL)).toHaveLength(0);
+    expect(book.getAskPrices()).toEqual([]);
+  });
+
   it("removeOrderById returns false when the order is no longer resting", () => {
     const book = new OrderBook();
     expect(book.removeOrderById(OrderSide.BUY, 100, "nonexistent")).toBe(false);

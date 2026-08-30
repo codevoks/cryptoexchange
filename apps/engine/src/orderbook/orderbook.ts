@@ -101,6 +101,14 @@ export class OrderBook {
     return level !== undefined ? level : [];
   }
 
+  // Below this, a resting order is considered fully consumed. Quantities are
+  // plain floats, so two mathematically-equal amounts (e.g. a remainder from
+  // one subtraction vs. a value typed directly into a form) can differ by a
+  // few units in the last decimal place — an exact `=== 0` check would leave
+  // a near-zero "ghost" order stuck in the book forever. 1e-8 matches
+  // Bitcoin's own satoshi precision, so it never masks a real quantity.
+  private static readonly DUST_THRESHOLD = 1e-8;
+
   reduceOrderQuantity(order: CreateOrderInput, reduction: number): void {
     const price = order.pricePerUnit;
     if (price == undefined) {
@@ -112,7 +120,7 @@ export class OrderBook {
       return;
     }
     targetOrder.quantity -= reduction;
-    if (targetOrder.quantity === 0) {
+    if (targetOrder.quantity <= OrderBook.DUST_THRESHOLD) {
       this.removeOrder(targetOrder);
     }
   }
