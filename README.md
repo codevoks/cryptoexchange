@@ -9,6 +9,8 @@ browsers over WebSockets fed by Redis pub/sub.
 It does not implement KYC, real payment rails, or regulatory compliance — see
 [Trade-offs & limitations](#trade-offs--limitations) for what's deliberately out of scope.
 
+![Trading dashboard: live BTC/USDT chart, order book with a resting partially-filled limit order, and open orders](docs/assets/trading-dashboard.png)
+
 ## Architecture
 
 ```mermaid
